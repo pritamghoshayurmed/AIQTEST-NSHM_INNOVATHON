@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .selection-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        select, button {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: none;
+        }
+        #questions {
+            list-style-type: none;
+            padding: 0;
+        }
+        #questions li {
+            cursor: pointer;
+            padding: 5px;
+            border-bottom: 1px solid #444;
+        }
+        #questions li:hover {
+            background-color: #333;
+        }
+        #editor {
+            height: 300px;
+            border: 1px solid #444;
+        }
+        #output {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #222;
+            color: #0f0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="selection-panel">
+            <label for="subject">Select Subject:</label>
+            <select id="subject" onchange="fetchTopics(this.value)">
+                <option value="">--Select Subject--</option>
+                <option value="dsa">DSA</option>
+                <option value="web">Web Development</option>
+                <option value="ml">Machine Learning</option>
+            </select>
+
+            <label for="topic">Select Topic:</label>
+            <select id="topic" onchange="fetchQuestions(this.value)">
+                <option value="">--Select Topic--</option>
+            </select>
+
+            <label for="language">Select Programming Language:</label>
+            <select id="language">
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="java">Java</option>
+            </select>
+        </div>
+
+        <ul id="questions">
+            <!-- Questions will be dynamically populated -->
+        </ul>
+
+        <div id="editor">// Your code will appear here</div>
+
+        <button onclick="runCode()">Run Code</button>
+        <div id="output">Output will be displayed here</div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ace.js"></script>
+    <script>
+        const editor = ace.edit("editor");
+        editor.setTheme("ace/theme/monokai");
+        editor.session.setMode("ace/mode/javascript");
+
+        const fetchTopics = async (subject) => {
+            const topics = {
+                dsa: ["Stack", "Queue", "LinkedList", "Graph"],
+                web: ["HTML", "CSS", "JavaScript"],
+                ml: ["Regression", "Classification", "Clustering"]
+            };
+
+            const topicDropdown = document.getElementById("topic");
+            topicDropdown.innerHTML = "<option value=''>--Select Topic--</option>";
+
+            if (topics[subject]) {
+                topics[subject].forEach((topic) => {
+                    const option = document.createElement("option");
+                    option.value = topic.toLowerCase();
+                    option.textContent = topic;
+                    topicDropdown.appendChild(option);
+                });
+            }
+        };
+
+        const fetchQuestions = async (topic) => {
+            const questions = {
+                stack: ["Implement Stack", "Check Balanced Parentheses"],
+                queue: ["Implement Queue", "Circular Queue"],
+                linkedlist: ["Reverse Linked List", "Detect Cycle"],
+                graph: ["DFS Traversal", "Shortest Path"]
+            };
+
+            const questionList = document.getElementById("questions");
+            questionList.innerHTML = "";
+
+            if (questions[topic]) {
+                questions[topic].forEach((question, index) => {
+                    const listItem = document.createElement("li");
+                    listItem.textContent = question;
+                    listItem.onclick = () => loadQuestion(index + 1);
+                    questionList.appendChild(listItem);
+                });
+            }
+        };
+
+        const loadQuestion = (questionId) => {
+            const language = document.getElementById("language").value;
+            const codeTemplates = {
+                1: {
+                    javascript: "function stack() {\n    // Implement Stack\n}\n\nconsole.log(stack());",
+                    python: "def stack():\n    # Implement Stack\n    pass\n\nprint(stack())",
+                    java: "public class Stack {\n    public static void main(String[] args) {\n        // Implement Stack\n    }\n}"
+                },
+                2: {
+                    javascript: "function balancedParentheses() {\n    // Check Balanced Parentheses\n}\n\nconsole.log(balancedParentheses());",
+                    python: "def balanced_parentheses():\n    # Check Balanced Parentheses\n    pass\n\nprint(balanced_parentheses())",
+                    java: "public class BalancedParentheses {\n    public static void main(String[] args) {\n        // Check Balanced Parentheses\n    }\n}"
+                }
+            };
+
+            const code = codeTemplates[questionId][language];
+            if (code) {
+                editor.session.setMode(`ace/mode/${language}`);
+                editor.setValue(code, 1);
+            } else {
+                alert("Code template not available for the selected language.");
+            }
+        };
+
+        const runCode = () => {
+            const language = document.getElementById("language").value;
+            const code = editor.getValue();
+            const outputDiv = document.getElementById("output");
+
+            if (language === "javascript") {
+                try {
+                    const result = eval(code);
+                    outputDiv.textContent = result !== undefined ? result : "Code executed successfully.";
+                } catch (error) {
+                    outputDiv.textContent = `Error: ${error.message}`;
+                }
+            } else {
+                outputDiv.textContent = `Running code in ${language} is not supported in this editor.`;
+            }
+        };
+    </script>
+</body>
+</html>

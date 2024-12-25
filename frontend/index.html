@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIQ Test - Login/Signup</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: white;
+            font-family: 'Roboto', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            display: flex;
+            background: linear-gradient(145deg, #1e1e1e, #2d2d2d);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            width: 900px;
+            max-width: 95%;
+            margin: 20px;
+            position: relative;
+        }
+
+        .left-side {
+            width: 45%;
+            position: relative;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+                        url('https://images.unsplash.com/photo-1516116216624-53e697fedbea?ixlib=rb-4.0.3');
+            background-size: cover;
+            background-position: center;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .logo-container {
+            background: linear-gradient(135deg, #00d1b2, #00a8c5);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0, 209, 178, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .logo-container:hover {
+            transform: scale(1.05);
+        }
+
+        .logo-container i {
+            font-size: 40px;
+            color: white;
+        }
+
+        .left-side .text {
+            text-align: left;
+        }
+
+        .left-side h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #00d1b2;
+        }
+
+        .left-side p {
+            font-size: 16px;
+            color: #a0a0a0;
+        }
+
+        .right-side {
+            width: 55%;
+            padding: 40px;
+        }
+
+        .form-section {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .form-section h1 {
+            font-size: 32px;
+            margin-bottom: 30px;
+            color: #00d1b2;
+            text-align: center;
+        }
+
+        .input-field {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-field label {
+            display: block;
+            margin-bottom: 8px;
+            color: #a0a0a0;
+            font-size: 14px;
+        }
+
+        .input-field input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .input-field input:focus {
+            border-color: #00d1b2;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 209, 178, 0.2);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #00d1b2, #00a8c5);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 209, 178, 0.3);
+        }
+
+        .link {
+            color: #00d1b2;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        .link:hover {
+            color: #00a8c5;
+        }
+
+        .form-footer {
+            margin-top: 20px;
+            text-align: center;
+            color: #a0a0a0;
+            font-size: 14px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .left-side {
+                width: 100%;
+                padding: 30px;
+                min-height: 300px;
+            }
+
+            .right-side {
+                width: 100%;
+            }
+        }
+
+        /* Added animation for form transitions */
+        .form-section {
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .form-section.hidden {
+            opacity: 0;
+            pointer-events: none;
+            position: absolute;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-side">
+            <div class="logo-container">
+                <i class="fas fa-brain"></i>
+            </div>
+            <div class="text">
+                <h2>Welcome to AIQ Test</h2>
+                <p>AI-Powered Question Paper Generator & Evaluator</p>
+            </div>
+        </div>
+        <div class="right-side">
+            <div id="signup-section" class="form-section">
+                <h1>Sign Up</h1>
+                <div class="input-field">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="Enter your email" required>
+                </div>
+                <div class="input-field">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" required>
+                </div>
+                <button class="submit-btn" onclick="submitForm()">Create Account</button>
+                <div class="form-footer">
+                    <p>Already have an account? <span class="link" onclick="showLogin()">Login here</span></p>
+                </div>
+            </div>
+
+            <div id="login-section" class="form-section hidden">
+                <h1>Welcome Back</h1>
+                <div class="input-field">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" placeholder="Enter your email" required>
+                </div>
+                <div class="input-field">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="Enter your password" required>
+                </div>
+                <button class="submit-btn" onclick="login()">Login</button>
+                <div class="form-footer">
+                    <p>Don't have an account? <span class="link" onclick="showSignUp()">Sign up here</span></p>
+                    <p><span class="link" onclick="showResetPassword()">Forgot Password?</span></p>
+                </div>
+            </div>
+
+            <div id="reset-password-section" class="form-section hidden">
+                <h1>Reset Password</h1>
+                <div class="input-field">
+                    <label for="reset-email">Email</label>
+                    <input type="email" id="reset-email" placeholder="Enter your email" required>
+                </div>
+                <button class="submit-btn" onclick="resetPassword()">Reset Password</button>
+                <div class="form-footer">
+                    <p><span class="link" onclick="showLogin()">Back to Login</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function submitForm() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+    
+            if (email && password) {
+                window.location.href = 'landing.html';
+            } else {
+                alert('Please fill in all fields.');
+            }
+        }
+    
+        function showLogin() {
+            document.getElementById('signup-section').classList.add('hidden');
+            document.getElementById('login-section').classList.remove('hidden');
+            document.getElementById('reset-password-section').classList.add('hidden');
+        }
+    
+        function showResetPassword() {
+            document.getElementById('signup-section').classList.add('hidden');
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('reset-password-section').classList.remove('hidden');
+        }
+    
+        function showSignUp() {
+            document.getElementById('signup-section').classList.remove('hidden');
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('reset-password-section').classList.add('hidden');
+        }
+    
+        function login() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+    
+            if (email && password) {
+                window.location.href = 'landing.html';
+            } else {
+                alert('Please fill in all fields.');
+            }
+        }
+    
+        function resetPassword() {
+            const email = document.getElementById('reset-email').value;
+    
+            if (email) {
+                alert('Password reset link sent to your email!');
+                showLogin();
+            } else {
+                alert('Please enter your email.');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Analytics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+
+        .performance-section {
+            margin: 20px;
+            padding: 20px;
+            background-color: #1e1e1e;
+            border-radius: 5px;
+        }
+
+        .chart-container {
+            margin-bottom: 20px;
+        }
+
+        canvas {
+            background-color: #2a2a2a;
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        #improvement-suggestions {
+            background-color: #2c2c2c;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        #improvement-suggestions h3 {
+            margin-top: 0;
+        }
+
+        #improvement-suggestions ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        #improvement-suggestions li {
+            margin: 5px 0;
+            padding: 10px;
+            background-color: #3a3a3a;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="performance-section">
+        <h2>Performance Analytics</h2>
+
+        <!-- Correctness Chart -->
+        <div class="chart-container">
+            <canvas id="correctness-chart"></canvas>
+        </div>
+
+        <!-- Execution Time Chart -->
+        <div class="chart-container">
+            <canvas id="execution-time-chart"></canvas>
+        </div>
+
+        <!-- Topic Performance Chart -->
+        <div class="chart-container">
+            <canvas id="topic-performance-chart"></canvas>
+        </div>
+
+        <!-- Improvement Suggestions -->
+        <div id="improvement-suggestions">
+            <h3>Improvement Suggestions</h3>
+            <ul></ul>
+        </div>
+    </div>
+
+    <script>
+        // Mock data for performance analytics
+        const userPerformance = {
+            correctness: { correct: 8, incorrect: 2 },
+            executionTime: { correct: 5.6, incorrect: 8.2 }, // Average time in seconds
+            topicPerformance: {
+                "Stack": 90,
+                "Queue": 70,
+                "Graph": 50,
+                "LinkedList": 80
+            },
+            improvementSuggestions: [
+                "Focus on optimizing your code for time complexity.",
+                "Revise graph algorithms for better accuracy.",
+                "Improve debugging skills to reduce runtime errors."
+            ]
+        };
+
+        // Function to render bar charts
+        const renderCharts = () => {
+            const ctxCorrectness = document.getElementById("correctness-chart").getContext("2d");
+            const ctxExecutionTime = document.getElementById("execution-time-chart").getContext("2d");
+            const ctxTopicPerformance = document.getElementById("topic-performance-chart").getContext("2d");
+
+            // Correctness Chart
+            new Chart(ctxCorrectness, {
+                type: 'bar',
+                data: {
+                    labels: ['Correct', 'Incorrect'],
+                    datasets: [{
+                        label: 'Correctness',
+                        data: [userPerformance.correctness.correct, userPerformance.correctness.incorrect],
+                        backgroundColor: ['#28a745', '#dc3545']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Execution Time Chart
+            new Chart(ctxExecutionTime, {
+                type: 'bar',
+                data: {
+                    labels: ['Correct', 'Incorrect'],
+                    datasets: [{
+                        label: 'Execution Time (s)',
+                        data: [userPerformance.executionTime.correct, userPerformance.executionTime.incorrect],
+                        backgroundColor: ['#007bff', '#ffc107']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Topic Performance Chart
+            new Chart(ctxTopicPerformance, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(userPerformance.topicPerformance),
+                    datasets: [{
+                        label: 'Performance (%)',
+                        data: Object.values(userPerformance.topicPerformance),
+                        backgroundColor: ['#17a2b8']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        };
+
+        // Render improvement suggestions
+        const renderImprovementSuggestions = () => {
+            const suggestionsList = document.querySelector("#improvement-suggestions ul");
+            userPerformance.improvementSuggestions.forEach((suggestion) => {
+                const listItem = document.createElement("li");
+                listItem.textContent = suggestion;
+                suggestionsList.appendChild(listItem);
+            });
+        };
+
+        // Initialize performance analytics
+        renderCharts();
+        renderImprovementSuggestions();
+    </script>
+</body>
+</html>

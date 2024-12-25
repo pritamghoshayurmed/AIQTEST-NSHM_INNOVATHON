@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Execution with Gemini AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #000;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header a {
+            color: #ffffff;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        header a:hover {
+            text-decoration: underline;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+        }
+
+        .selection-panel {
+            width: 30%;
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        .selection-panel label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        select, button, input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul li {
+            background-color: #2c2c2c;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        ul li:hover {
+            background-color: #444;
+        }
+
+        .editor-panel {
+            width: 65%;
+        }
+
+        #editor {
+            height: 300px;
+            border: 1px solid #444;
+            border-radius: 5px;
+        }
+
+        #output {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #222;
+            color: #0f0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Code Execution with Gemini AI</h1>
+        <nav>
+            <a href="#">Home</a>
+            <a href="#">Tests</a>
+            <a href="#">Performance</a>
+            <a href="#">Sign Out</a>
+        </nav>
+    </header>
+    <div class="container">
+        <div class="selection-panel">
+            <h2>Test Options</h2>
+            <label for="topic">Topic:</label>
+            <input type="text" id="topic" placeholder="Enter topic (e.g., arrays, strings)" />
+
+            <label for="difficulty">Difficulty Level:</label>
+            <select id="difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+
+            <label for="prog-lang">Programming Language:</label>
+            <select id="prog-lang">
+                <option value="python">Python</option>
+                <option value="c">C</option>
+            </select>
+
+            <button id="start-test-btn">Generate Questions</button>
+
+            <h3>Questions:</h3>
+            <ul id="questions-list"></ul>
+        </div>
+
+        <div class="editor-panel">
+            <h2>Live Code Editor</h2>
+            <div id="editor"># Write your code here...</div>
+            <button id="run-code-btn">Run Code</button>
+            <div id="output">Output will be displayed here</div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ace.js"></script>
+    <script>
+        const editor = ace.edit("editor");
+        editor.setTheme("ace/theme/monokai");
+        editor.session.setMode("ace/mode/python");
+
+        const questionsList = document.getElementById("questions-list");
+        const outputDiv = document.getElementById("output");
+
+        // Fetch questions from Gemini AI
+        async function fetchQuestions(topic, difficulty, language) {
+            try {
+                const response = await fetch("http://127.0.0.1:5000/generate_questions", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ topic, difficulty, language }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server responded with status ${response.status}`);
+                }
+
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                return data.questions; // Questions and templates from Gemini AI
+            } catch (error) {
+                console.error("Error fetching questions:", error.message);
+                outputDiv.textContent = "Error fetching questions. Check the console for details.";
+                return [];
+            }
+        }
+
+        // Generate Questions Button
+        document.getElementById("start-test-btn").addEventListener("click", async () => {
+            const topic = document.getElementById("topic").value.trim();
+            const difficulty = document.getElementById("difficulty").value;
+            const language = document.getElementById("prog-lang").value;
+
+            if (!topic) {
+                alert("Please enter a topic.");
+                return;
+            }
+
+            questionsList.innerHTML = ""; // Clear previous questions
+            outputDiv.textContent = ""; // Clear output
+            const questions = await fetchQuestions(topic, difficulty, language);
+
+            if (questions.length === 0) {
+                alert("No questions found. Please try again.");
+                return;
+            }
+
+            questions.forEach((q) => {
+                const li = document.createElement("li");
+                li.textContent = q.question;
+                li.onclick = () => loadQuestion(q.template, language);
+                questionsList.appendChild(li);
+            });
+        });
+
+        // Load Selected Question into Editor
+        function loadQuestion(template, lang) {
+            editor.setValue(template, 1);
+            editor.session.setMode(lang === "python" ? "ace/mode/python" : "ace/mode/c_cpp");
+        }
+
+        // Run Code Button
+        document.getElementById("run-code-btn").addEventListener("click", async () => {
+            const code = editor.getValue();
+            const lang = document.getElementById("prog-lang").value;
+
+            outputDiv.textContent = "Running code...";
+            try {
+                const response = await fetch("http://127.0.0.1:5000/execute", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ code, lang }),
+                });
+
+                const result = await response.json();
+                if (result.error) {
+                    outputDiv.textContent = `Error: ${result.error}`;
+                } else {
+                    outputDiv.textContent = result.output;
+                }
+            } catch (error) {
+                outputDiv.textContent = `Error: Unable to execute code. (${error.message})`;
+            }
+        });
+    </script>
+</body>
+</html>

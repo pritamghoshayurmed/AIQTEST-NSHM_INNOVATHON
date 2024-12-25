@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            color: #fff;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #111;
+        }
+
+        header a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            padding: 20px;
+        }
+
+        .test-options {
+            flex: 1;
+            margin-right: 20px;
+        }
+
+        .test-options label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .test-options select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #444;
+            background-color: #222;
+            color: #fff;
+        }
+
+        .code-editor {
+            flex: 2;
+            background-color: #1e1e1e;
+            border: 1px solid #444;
+            border-radius: 5px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #editor {
+            height: 400px;
+            font-size: 16px;
+        }
+
+        .run-code-btn {
+            padding: 10px;
+            text-align: center;
+            background-color: #0f62fe;
+            color: #fff;
+            cursor: pointer;
+            border: none;
+        }
+
+        .run-code-btn:hover {
+            background-color: #0353e9;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #111;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ace.js"></script>
+</head>
+<body>
+
+<header>
+    <div><h1>Test Page</h1></div>
+    <nav>
+        <a href="#">Home</a>
+        <a href="#">Tests</a>
+        <a href="#">Performance</a>
+        <a href="#">Sign Out</a>
+    </nav>
+</header>
+
+<div class="container">
+    <div class="test-options">
+        <h2>Select Test Options</h2>
+        <label for="subject">Subject:</label>
+        <select id="subject">
+            <option value="">--Select Subject--</option>
+            <option value="math">Math</option>
+            <option value="programming">Programming</option>
+            <option value="science">Science</option>
+        </select>
+
+        <label for="topic">Topic:</label>
+        <select id="topic">
+            <option value="">--Select Topic--</option>
+            <option value="algebra">Algebra</option>
+            <option value="recursion">Recursion</option>
+            <option value="physics">Physics</option>
+        </select>
+
+        <label for="difficulty">Difficulty Level:</label>
+        <select id="difficulty">
+            <option value="">--Select Difficulty--</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+        </select>
+
+        <button class="run-code-btn">Start Test</button>
+    </div>
+
+    <div class="code-editor">
+        <h2>Live Code Editor</h2>
+        <div id="editor">// Write your code here...</div>
+        <button class="run-code-btn" onclick="runCode()">Run Code</button>
+        <div id="output" style="padding: 10px; background: #222; color: #0f0;"></div>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2024 Test Page. All rights reserved.</p>
+</footer>
+
+<script>
+    const editor = ace.edit("editor");
+    editor.setTheme("ace/theme/monokai");
+    editor.session.setMode("ace/mode/javascript");
+
+    function runCode() {
+        const userCode = editor.getValue();
+        try {
+            const output = eval(userCode);
+            document.getElementById('output').innerText = output || 'Code ran successfully!';
+        } catch (err) {
+            document.getElementById('output').innerText = 'Error: ' + err.message;
+        }
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Test - MCQ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #000;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header a {
+            color: #ffffff;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        .container {
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .selection-panel {
+            width: 30%;
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        .question-panel {
+            width: 65%;
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        select, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: none;
+            background-color: #333;
+            color: white;
+        }
+
+        button {
+            background-color: #007bff;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .mcq-option {
+            display: block;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #333;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .mcq-option:hover {
+            background-color: #444;
+        }
+
+        .mcq-option input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        #score-display {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #222;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .selected {
+            background-color: #007bff;
+        }
+
+        .correct {
+            background-color: #28a745;
+        }
+
+        .incorrect {
+            background-color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Academic Test - MCQ</h1>
+        <nav>
+            <a href="landing.html">Home</a>
+            <a href="#">Tests</a>
+            <a href="analysis.html">Performance</a>
+            <a href="index1.html">Sign Out</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="selection-panel">
+            <h2>Select Test Options</h2>
+            <label for="subject">Subject:</label>
+            <select id="subject" onchange="fetchTopics(this.value)">
+                <option value="">--Select Subject--</option>
+                <option value="math">Mathematics</option>
+                <option value="science">Science</option>
+                <option value="programming">Programming</option>
+            </select>
+
+            <label for="topic">Topic:</label>
+            <select id="topic">
+                <option value="">--Select Topic--</option>
+            </select>
+
+            <label for="difficulty">Difficulty Level:</label>
+            <select id="difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+
+            <button onclick="generateQuestions()">Start Test</button>
+        </div>
+
+        <div class="question-panel">
+            <div id="questions-container"></div>
+            <button onclick="submitTest()" id="submit-btn" style="display: none;">Submit Test</button>
+            <div id="score-display"></div>
+        </div>
+    </div>
+
+    <script>
+        const GEMINI_API_KEY = 'AIzaSyCgFJuedy0xTNSliILy-tWIEa6O3f40RB0';
+        const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=' + GEMINI_API_KEY;
+
+        const topics = {
+            math: ["Algebra", "Geometry", "Calculus", "Statistics"],
+            science: ["Physics", "Chemistry", "Biology", "Earth Science"],
+            programming: ["Python", "JavaScript", "Java", "Data Structures"]
+        };
+
+        function fetchTopics(subject) {
+            const topicSelect = document.getElementById('topic');
+            topicSelect.innerHTML = '<option value="">--Select Topic--</option>';
+            
+            if (topics[subject]) {
+                topics[subject].forEach(topic => {
+                    const option = document.createElement('option');
+                    option.value = topic.toLowerCase();
+                    option.textContent = topic;
+                    topicSelect.appendChild(option);
+                });
+            }
+        }
+
+        async function generateQuestions() {
+            const subject = document.getElementById('subject').value;
+            const topic = document.getElementById('topic').value;
+            const difficulty = document.getElementById('difficulty').value;
+
+            if (!subject || !topic) {
+                alert('Please select both subject and topic');
+                return;
+            }
+
+            const prompt = `Generate 5 multiple choice questions about ${topic} in ${subject} at ${difficulty} difficulty level.
+            Return ONLY a valid JSON object in this format:
+            {
+                "questions": [
+                    {
+                        "question": "Question text",
+                        "options": ["option1", "option2", "option3", "option4"],
+                        "correctAnswer": 0,
+                        "explanation": "Explanation for the correct answer"
+                    }
+                ]
+            }`;
+
+            try {
+                const response = await fetch(GEMINI_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: prompt
+                            }]
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                const questions = JSON.parse(data.candidates[0].content.parts[0].text).questions;
+                displayQuestions(questions);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error generating questions. Please try again.');
+            }
+        }
+
+        function displayQuestions(questions) {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+            
+            questions.forEach((q, qIndex) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.innerHTML = `
+                    <h3>Question ${qIndex + 1}</h3>
+                    <p>${q.question}</p>
+                    <div class="options">
+                        ${q.options.map((opt, i) => `
+                            <label class="mcq-option">
+                                <input type="radio" name="q${qIndex}" value="${i}">
+                                ${opt}
+                            </label>
+                        `).join('')}
+                    </div>
+                    <div class="explanation" style="display: none;">${q.explanation}</div>
+                `;
+                container.appendChild(questionDiv);
+            });
+
+            document.getElementById('submit-btn').style.display = 'block';
+            document.getElementById('score-display').innerHTML = '';
+            window.currentQuestions = questions;
+        }
+
+        function submitTest() {
+            const questions = window.currentQuestions;
+            let score = 0;
+            let total = questions.length;
+
+            questions.forEach((q, qIndex) => {
+                const selected = document.querySelector(`input[name="q${qIndex}"]:checked`);
+                if (selected) {
+                    const selectedAnswer = parseInt(selected.value);
+                    const optionElements = document.querySelectorAll(`input[name="q${qIndex}"]`);
+                    
+                    optionElements.forEach(opt => {
+                        const label = opt.parentElement;
+                        if (parseInt(opt.value) === q.correctAnswer) {
+                            label.classList.add('correct');
+                        } else if (parseInt(opt.value) === selectedAnswer && selectedAnswer !== q.correctAnswer) {
+                            label.classList.add('incorrect');
+                        }
+                    });
+
+                    if (selectedAnswer === q.correctAnswer) score++;
+                }
+                document.querySelector(`div.explanation`).style.display = 'block';
+            });
+
+            document.getElementById('score-display').innerHTML = `
+                <h3>Your Score: ${score}/${total}</h3>
+                <p>Percentage: ${(score/total * 100).toFixed(2)}%</p>
+            `;
+        }
+    </script>
+</body>
+</html>

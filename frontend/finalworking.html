@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #000;
+            padding: 10px 20px;
+            display: flex;
+            
+            justify-content: space-between;
+            align-items: center;
+        }
+        header a {
+            color: #ffffff;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        header a:hover {
+            text-decoration: underline;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+        }
+        .selection-panel {
+            width: 30%;
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .selection-panel h2 {
+            margin-top: 0;
+        }
+        .selection-panel label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        select, button {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: none;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .editor-panel {
+            width: 65%;
+        }
+        #editor {
+            height: 300px;
+            border: 1px solid #444;
+            border-radius: 5px;
+        }
+        #output {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #222;
+            color: #0f0;
+            border-radius: 5px;
+        }
+        #run-code-btn {
+            margin-top: 10px;
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #run-code-btn:hover {
+            background-color: #0056b3;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        ul li {
+            background-color: #2c2c2c;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        ul li:hover {
+            background-color: #444;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Test Page</h1>
+        <nav>
+            <a href="landing.html">Home</a>
+            <a href="#">Tests</a>
+            <a href="performance.html">Performance</a>
+            <a href="index1.html">Sign Out</a>
+        </nav>
+    </header>
+    <div class="container">
+        <div class="selection-panel">
+            <h2>Select Test Options</h2>
+            <label for="subject">Subject:</label>
+            <select id="subject" onchange="fetchTopics(this.value)">
+                <option value="">--Select Subject--</option>
+                <option value="dsa">DSA</option>
+                <option value="web">Web Development</option>
+                <option value="ml">Machine Learning</option>
+            </select>
+
+            <label for="topic">Topic:</label>
+            <select id="topic" onchange="fetchQuestions(this.value)">
+                <option value="">--Select Topic--</option>
+            </select>
+
+            <label for="language">Difficulty Level:</label>
+            <select id="language">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+
+            <label for="prog-lang">Programming Language:</label>
+            <select id="prog-lang">
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="java">Java</option>
+            </select>
+
+            <button id="start-test-btn">Start Test</button>
+
+            <h3>Questions:</h3>
+            <ul id="questions-list"></ul>
+        </div>
+        <div class="editor-panel">
+            <h2>Live Code Editor</h2>
+            <div id="editor">// Write your code here...</div>
+            <button id="run-code-btn" onclick="runCode()">Run Code</button>
+            <div id="output">Output will be displayed here</div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ace.js"></script>
+    <script>
+        // Gemini AI Configuration
+        const GEMINI_API_KEY = 'AIzaSyCgFJuedy0xTNSliILy-tWIEa6O3f40RB0'; // Replace with your API key
+        const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=' + GEMINI_API_KEY;
+
+        // Initialize Ace Editor
+        const editor = ace.edit("editor");
+        editor.setTheme("ace/theme/monokai");
+        editor.session.setMode("ace/mode/javascript");
+
+        // Topic mapping
+        const fetchTopics = async (subject) => {
+            const topics = {
+                dsa: ["Arrays", "Linked Lists", "Trees", "Graphs", "Dynamic Programming"],
+                web: ["HTML/CSS", "JavaScript", "React", "Node.js", "APIs"],
+                ml: ["Regression", "Classification", "Neural Networks", "Deep Learning"]
+            };
+
+            const topicDropdown = document.getElementById("topic");
+            topicDropdown.innerHTML = "<option value=''>--Select Topic--</option>";
+
+            if (topics[subject]) {
+                topics[subject].forEach((topic) => {
+                    const option = document.createElement("option");
+                    option.value = topic.toLowerCase();
+                    option.textContent = topic;
+                    topicDropdown.appendChild(option);
+                });
+            }
+        };
+
+        // Fetch questions using Gemini AI
+        const fetchQuestions = async (topic) => {
+            const difficulty = document.getElementById("language").value;
+            const progLang = document.getElementById("prog-lang").value;
+
+            const prompt = `Generate 3 ${difficulty} level coding questions about ${topic} in ${progLang}. 
+            Return ONLY a valid JSON object in this exact format without any additional text or markdown:
+            {
+                "questions": [
+                    {
+                        "name": "Question title",
+                        "description": "Detailed problem description",
+                        "code": "Initial code template",
+                        "testCases": [
+                            {"input": "example input", "expected": "expected output"}
+                        ]
+                    }
+                ]
+            }`;
+
+            try {
+                const response = await fetch(GEMINI_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: prompt
+                            }]
+                        }]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch questions');
+                }
+
+                const data = await response.json();
+                let questions;
+                
+                try {
+                    // Try to parse the response text directly
+                    questions = JSON.parse(data.candidates[0].content.parts[0].text).questions;
+                } catch (parseError) {
+                    // If parsing fails, try to clean the response
+                    const responseText = data.candidates[0].content.parts[0].text;
+                    const jsonStart = responseText.indexOf('{');
+                    const jsonEnd = responseText.lastIndexOf('}') + 1;
+                    const jsonString = responseText.slice(jsonStart, jsonEnd);
+                    questions = JSON.parse(jsonString).questions;
+                }
+                
+                const questionList = document.getElementById("questions-list");
+                questionList.innerHTML = "";
+
+                questions.forEach((question, index) => {
+                    const listItem = document.createElement("li");
+                    listItem.textContent = question.name;
+                    listItem.onclick = () => loadQuestion(question);
+                    questionList.appendChild(listItem);
+                });
+            } catch (error) {
+                console.error('Error fetching questions:', error);
+                document.getElementById("output").textContent = `Error: ${error.message}`;
+            }
+        };
+
+        // Load selected question into editor
+        const loadQuestion = (question) => {
+            const lang = document.getElementById("prog-lang").value;
+            editor.setValue(question.code);
+            editor.session.setMode(`ace/mode/${lang}`);
+            document.getElementById("output").textContent = question.description;
+        };
+
+        // Run and analyze code using Gemini AI
+        const runCode = async () => {
+            const code = editor.getValue();
+            const outputDiv = document.getElementById("output");
+            outputDiv.textContent = "Analyzing code...";
+
+            try {
+                const prompt = `Analyze this code and provide feedback:
+                ${code}
+
+                Provide analysis in the following format:
+                1. Code Correctness
+                2. Performance Analysis
+                3. Best Practices
+                4. Suggested Improvements`;
+
+                const response = await fetch(GEMINI_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: prompt
+                            }]
+                        }]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to analyze code');
+                }
+
+                const data = await response.json();
+                const analysis = data.candidates[0].content.parts[0].text;
+                outputDiv.textContent = analysis;
+            } catch (error) {
+                console.error('Error analyzing code:', error);
+                outputDiv.textContent = `Error: ${error.message}`;
+            }
+        };
+
+        // Initialize event listener for start test button
+        document.getElementById("start-test-btn").addEventListener("click", () => {
+            const topic = document.getElementById("topic").value;
+            if (topic) {
+                fetchQuestions(topic);
+            } else {
+                alert("Please select a topic first");
+            }
+        });
+    </script>
+</body>
+</html>
